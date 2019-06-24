@@ -9,7 +9,11 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pg": "^7.11.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.8.12",
+    "sequelize-cli": "^5.5.0"
   },
   "devDependencies": {
     "eslint": "^6.0.0",
