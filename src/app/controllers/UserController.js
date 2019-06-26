@@ -5,15 +5,20 @@ class UserController {
   async store(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string().required(),
-      email: Yup.string().email(),
+      email: Yup.string()
+        .email()
+        .required(),
       password: Yup.string()
         .required()
         .min(6),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: err.errors });
     }
+
     const userExists = await User.findOne({ where: { email: req.body.email } });
     if (userExists) {
       return res.status(400).json({ error: 'User already exists' });
@@ -38,8 +43,10 @@ class UserController {
       ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: err.errors });
     }
 
     const { email, oldPassword } = req.body;
