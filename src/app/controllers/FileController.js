@@ -5,10 +5,6 @@ class FileController {
     const { originalname: name, filename: path } = req.file;
     const file = await File.create({ name, path });
 
-    // upload.single('file'),
-    //   (req, res) => {
-    //     return res.json({ ok: true });
-    //   };
     return res.json(file);
   }
 }
