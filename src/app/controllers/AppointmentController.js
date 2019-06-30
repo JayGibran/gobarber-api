@@ -3,8 +3,11 @@ import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import Appointment from '../models/Appointment';
-import Notification from '../schemas/Notification';
 import File from '../models/File';
+import Notification from '../schemas/Notification';
+
+import CancellationMail from '../jobs/CancellationMail';
+import Queue from '../../lib/Queue';
 
 class AppointmentController {
   async index(req, res) {
@@ -107,7 +110,12 @@ class AppointmentController {
   }
 
   async delete(req, res) {
-    const appointment = await Appointment.findByPk(req.params.id);
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'provider', attributes: ['name', 'email'] },
+        { model: User, as: 'user', attributes: ['name'] },
+      ],
+    });
     if (!appointment) {
       return res.status(400).json({
         error: 'This appointment does not exist',
@@ -126,7 +134,11 @@ class AppointmentController {
         .json({ error: 'You can only cancel appointments 2 hours in advance' });
     }
     appointment.canceled_at = new Date();
+
     await appointment.save();
+
+    Queue.add(CancellationMail.key, { appointment });
+
     return res.json(appointment);
   }
 }
